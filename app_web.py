@@ -214,18 +214,14 @@ with st.sidebar:
                             )
                             required_strikers[period] = need
             
-            # Bouton pour valider les besoins
-            if st.button("✅ Valider les besoins", type="primary", use_container_width=True, key=f"validate_needs_{file_key}"):
-                st.session_state['required_strikers_mode1'] = required_strikers
-                st.success(f"✓ Besoins validés pour {len(required_strikers)} périodes !")
-                st.balloons()
+            # Toujours sauvegarder dans session_state (mise à jour automatique)
+            st.session_state['required_strikers_mode1'] = required_strikers
             
-            # Afficher l'état actuel
-            if 'required_strikers_mode1' in st.session_state and st.session_state['required_strikers_mode1']:
-                validated = st.session_state['required_strikers_mode1']
-                st.info(f"📌 **Besoins actuellement validés** : {len(validated)} périodes")
-                with st.expander("Voir le détail"):
-                    for period, need in validated.items():
+            # Afficher confirmation
+            if required_strikers:
+                st.success(f"✅ Besoins configurés : {len(required_strikers)} périodes")
+                with st.expander("📋 Voir le détail"):
+                    for period, need in required_strikers.items():
                         st.write(f"- **{period}** : {need} grévistes")
         else:
             st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
@@ -362,10 +358,6 @@ if uploaded_file is not None:
                     # Récupérer required_strikers depuis session_state
                     # (mis à jour par la sidebar)
                     required_strikers = st.session_state.get('required_strikers_mode1', None)
-                    
-                    # Debug
-                    st.write(f"DEBUG: required_strikers = {required_strikers}")
-                    st.write(f"DEBUG: type = {type(required_strikers)}")
                     
                     if required_strikers is None or not required_strikers:
                         st.error("⚠️ **Les besoins n'ont pas été validés !**")
