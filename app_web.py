@@ -166,79 +166,78 @@ with st.sidebar:
     if mode == 1:
         st.markdown("#### 📊 Configuration des besoins")
         
-        # Message d'instruction
-        if 'optimizer' not in st.session_state:
-            st.info("📁 **Étape 1** : Chargez d'abord un fichier Excel (section ci-dessous) pour configurer les besoins spécifiques")
-        
-        # Vérifier si un fichier est chargé pour avoir les périodes
+        # Déterminer les périodes : soit du fichier, soit par défaut
         if 'optimizer' in st.session_state:
             optimizer = st.session_state['optimizer']
-            file_key = st.session_state.get('last_file', 'default')
-            
-            st.info("Définissez le nombre de grévistes souhaité pour chaque période")
-            
-            # Option : même nombre pour toutes les périodes ou personnalisé
-            uniform_need = st.checkbox(
-                "Utiliser le même nombre pour toutes les périodes",
-                value=True,
-                help="Cochez pour définir un seul nombre appliqué à toutes les périodes",
-                key=f"uniform_need_{file_key}"
+            periods = optimizer.periods
+            max_teachers = len(optimizer.teachers)
+            file_loaded = True
+        else:
+            # Périodes par défaut si pas de fichier
+            periods = [f"P{i}" for i in range(1, 11)]  # P1 à P10 par défaut
+            max_teachers = 50  # Valeur par défaut
+            file_loaded = False
+            st.info("📁 Configurez les besoins ci-dessous. Vous pourrez ajuster après avoir chargé votre fichier Excel.")
+        
+        file_key = st.session_state.get('last_file', 'default') if file_loaded else 'default'
+        
+        # Option : même nombre pour toutes les périodes ou personnalisé
+        uniform_need = st.checkbox(
+            "Utiliser le même nombre pour toutes les périodes",
+            value=True,
+            help="Cochez pour définir un seul nombre appliqué à toutes les périodes",
+            key=f"uniform_need_{file_key}"
+        )
+        
+        required_strikers = {}
+        
+        if uniform_need:
+            default_need = st.number_input(
+                "Nombre de grévistes souhaité (toutes périodes)",
+                min_value=1,
+                max_value=max_teachers,
+                value=min(5, max_teachers),
+                step=1,
+                help="Ce nombre sera appliqué à toutes les périodes",
+                key=f"default_need_{file_key}"
             )
+            for period in periods:
+                required_strikers[period] = default_need
+        else:
+            st.markdown("Définissez les besoins par période :")
+            cols_per_row = 3
             
-            required_strikers = {}
-            
-            if uniform_need:
-                default_need = st.number_input(
-                    "Nombre de grévistes souhaité (toutes périodes)",
-                    min_value=1,
-                    max_value=len(optimizer.teachers),
-                    value=min(5, len(optimizer.teachers)),
-                    step=1,
-                    help="Ce nombre sera appliqué à toutes les périodes",
-                    key=f"default_need_{file_key}"
-                )
-                for period in optimizer.periods:
-                    required_strikers[period] = default_need
-            else:
-                st.markdown("Définissez les besoins par période :")
-                cols_per_row = 3
-                periods = optimizer.periods
-                
-                for idx in range(0, len(periods), cols_per_row):
-                    cols = st.columns(cols_per_row)
-                    for col_idx, period in enumerate(periods[idx:idx+cols_per_row]):
-                        with cols[col_idx]:
-                            need = st.number_input(
-                                f"{period}",
-                                min_value=0,
-                                max_value=len(optimizer.teachers),
-                                value=min(5, len(optimizer.teachers)),
-                                step=1,
-                                key=f"need_{period}"
-                            )
-                            required_strikers[period] = need
-            
-            # Bouton de validation explicite
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                if st.button("✅ Valider les besoins", type="primary", use_container_width=True, key=f"validate_{file_key}"):
-                    st.session_state['required_strikers_mode1'] = required_strikers
-                    st.session_state['needs_validated'] = True
-                    st.success(f"✓ Besoins validés pour {len(required_strikers)} périodes !")
-            
-            # Afficher l'état de validation
-            if st.session_state.get('needs_validated', False) and 'required_strikers_mode1' in st.session_state:
-                validated = st.session_state['required_strikers_mode1']
-                st.success(f"✅ {len(validated)} périodes validées")
-                with st.expander("📋 Détail des besoins validés"):
-                    for period, need in validated.items():
-                        st.write(f"**{period}** : {need} grévistes")
-            else:
-                st.warning("⚠️ Cliquez sur 'Valider les besoins' avant d'optimiser")
-        # Si pas d'optimizer, le message est déjà affiché en haut
-        # Réinitialiser les besoins si pas de fichier
-        if 'optimizer' not in st.session_state:
-            st.session_state['required_strikers_mode1'] = None
+            for idx in range(0, len(periods), cols_per_row):
+                cols = st.columns(cols_per_row)
+                for col_idx, period in enumerate(periods[idx:idx+cols_per_row]):
+                    with cols[col_idx]:
+                        need = st.number_input(
+                            f"{period}",
+                            min_value=0,
+                            max_value=max_teachers,
+                            value=min(5, max_teachers),
+                            step=1,
+                            key=f"need_{period}_{file_key}"
+                        )
+                        required_strikers[period] = need
+        
+        # Bouton de validation explicite
+        if st.button("✅ Valider les besoins", type="primary", use_container_width=True, key=f"validate_{file_key}"):
+            st.session_state['required_strikers_mode1'] = required_strikers
+            st.session_state['needs_validated'] = True
+            st.success(f"✓ Besoins validés pour {len(required_strikers)} périodes !")
+        
+        # Afficher l'état de validation
+        if st.session_state.get('needs_validated', False) and 'required_strikers_mode1' in st.session_state:
+            validated = st.session_state['required_strikers_mode1']
+            st.success(f"✅ {len(validated)} périodes validées")
+            with st.expander("📋 Détail des besoins validés"):
+                for period, need in validated.items():
+                    st.write(f"**{period}** : {need} grévistes")
+        elif not file_loaded:
+            st.info("💡 Validez les besoins ci-dessus, puis chargez votre fichier Excel")
+        else:
+            st.warning("⚠️ Cliquez sur 'Valider les besoins' avant d'optimiser")
     
     elif mode == 2:
         periods_per_teacher = st.number_input(
