@@ -386,6 +386,9 @@ class GrevesOptimizer:
             if period in self.required_strikers and self.required_strikers[period] > 0:
                 # Plafonner au besoin pour ne pas gaspiller
                 prob += coverage_per_period[j] <= self.required_strikers[period]
+            else:
+                # AUCUNE grève sur les périodes sans besoin
+                prob += coverage_per_period[j] == 0
         
         # Lier coverage_per_period au nombre de grévistes effectifs
         for j in range(num_periods):
