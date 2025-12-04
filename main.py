@@ -403,9 +403,33 @@ class GrevesOptimizer:
         for j in range(num_periods):
             prob += strikers_per_period[j] == pulp.lpSum([strike[i][j] for i in range(num_teachers)])
 
-        # Résoudre avec CBC
-        solver = pulp.COIN_CMD(path=self.cbc_path, msg=0, timeLimit=30)
-        prob.solve(solver)
+        # Résoudre
+        print("\nRésolution du problème d'optimisation...")
+        
+        # Essayer différents solveurs dans l'ordre de préférence
+        solvers_to_try = [
+            ('CyLP', lambda: pulp.getSolver('CyLP', msg=0)),
+            ('COIN_CMD', lambda: pulp.COIN_CMD(msg=0, timeLimit=30)),
+            ('PULP_CBC_CMD', lambda: pulp.PULP_CBC_CMD(msg=0, timeLimit=30)),
+        ]
+        
+        solved = False
+        for solver_name, solver_func in solvers_to_try:
+            try:
+                solver = solver_func()
+                if solver is not None and solver.available():
+                    print(f"Utilisation du solveur: {solver_name}")
+                    prob.solve(solver)
+                    solved = True
+                    break
+            except Exception as e:
+                print(f"Échec du solveur {solver_name}: {e}")
+                continue
+        
+        if not solved:
+            print("Aucun solveur disponible, tentative avec le solveur par défaut...")
+            prob.solve()
+        
 
         # Vérifier le statut
         status = pulp.LpStatus[prob.status]
