@@ -168,7 +168,7 @@ with st.sidebar:
         
         # Message d'instruction
         if 'optimizer' not in st.session_state:
-            st.info("📁 Chargez d'abord un fichier Excel (ci-dessous) pour configurer les besoins spécifiques")
+            st.info("📁 **Étape 1** : Chargez d'abord un fichier Excel (section ci-dessous) pour configurer les besoins spécifiques")
         
         # Vérifier si un fichier est chargé pour avoir les périodes
         if 'optimizer' in st.session_state:
