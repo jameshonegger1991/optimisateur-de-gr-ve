@@ -99,15 +99,21 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     
     ---
     
-    #### 🎯 Mode 2 : Périodes fixes par enseignant
-    **Objectif** : Chaque enseignant fait au maximum N périodes de grève
+    #### 🎯 Mode 2 : Maximiser l'impact avec limite par enseignant
+    **Objectif** : Maximiser le nombre total de grévistes en respectant une limite par enseignant
     
     - ✅ Garantit que personne ne dépassera le nombre maximal de périodes
-    - ✅ Priorise automatiquement les périodes qui ont le plus besoin de grévistes
-    - ✅ Répartit équitablement la charge
-    - ⚠️ Peut ne pas atteindre tous les besoins (si pas assez de disponibilités)
+    - ✅ Maximise l'impact global de la grève
+    - ✅ **Option seuil de fermeture** : cherche à fermer un maximum de périodes (atteindre le seuil partout)
+    - ✅ **Option exclusion** : permet d'exclure certaines périodes (pauses, récré, etc.)
+    - ⚠️ Ne respecte PAS le TABLEAU 2 (besoins) - Mode 2 ignore ces données
     
-    **Quand l'utiliser ?** Quand vous voulez limiter la charge par personne (ex: max 2 grèves par enseignant).
+    **Quand l'utiliser ?** Quand vous voulez maximiser l'impact tout en limitant la charge individuelle.
+    
+    **Exemple avec seuil :** Si le seuil est de 10 grévistes pour fermer :
+    - L'algorithme essaie d'atteindre 10 sur un maximum de périodes
+    - Une fois 10 atteints sur une période, il priorise les autres périodes
+    - Résultat : plus de périodes fermées au lieu de concentrer sur quelques-unes
     
     ---
     
@@ -169,12 +175,37 @@ with st.sidebar:
     
     if mode == 2:
         periods_per_teacher = st.number_input(
-            "Nombre de périodes par enseignant",
+            "Nombre maximum de périodes par enseignant",
             min_value=1,
             max_value=10,
             value=2,
-            step=1
+            step=1,
+            help="Limite le nombre de périodes de grève par personne"
         )
+        
+        st.markdown("#### Options avancées")
+        
+        closure_threshold = st.number_input(
+            "Seuil de fermeture (optionnel)",
+            min_value=0,
+            value=0,
+            step=1,
+            help="Nombre minimum de grévistes par période pour fermer l'établissement. Laissez 0 si inconnu."
+        )
+        
+        # Sélection des périodes à exclure
+        if 'optimizer' in st.session_state:
+            optimizer = st.session_state['optimizer']
+            excluded_periods = st.multiselect(
+                "Périodes à exclure (aucune grève)",
+                options=optimizer.periods,
+                default=[],
+                help="Sélectionnez les périodes où vous ne souhaitez pas de grèves"
+            )
+            st.session_state['excluded_periods_mode2'] = excluded_periods
+        else:
+            st.info("Chargez un fichier pour sélectionner les périodes à exclure")
+            st.session_state['excluded_periods_mode2'] = []
     
     st.markdown("---")
     st.markdown("### 💡 Aide")
@@ -188,11 +219,16 @@ with st.sidebar:
         """)
     else:
         st.info("""
-        **Mode 2** : Chaque enseignant fait maximum N périodes de grève. L'algorithme priorise les périodes avec des besoins.
+        **Mode 2** : Maximiser le nombre de grévistes tout en limitant le nombre de périodes par enseignant.
+        
+        Options :
+        - **Nombre max de périodes** : limite par enseignant
+        - **Seuil de fermeture** (optionnel) : nombre minimum de grévistes pour fermer. Si fourni, l'algorithme cherche à atteindre ce seuil sur un maximum de périodes
+        - **Périodes à exclure** (optionnel) : périodes sans grèves souhaitées
         
         Votre fichier Excel doit avoir :
         - TABLEAU 1 : Disponibilités (1 si l'enseignant travaille, 0 sinon)
-        - TABLEAU 2 : Besoins par période (pour priorisation)
+        - TABLEAU 2 : Non utilisé en Mode 2
         """)
 
 # Zone principale
@@ -260,7 +296,14 @@ if uploaded_file is not None:
                 if mode == 1:
                     solution = optimizer.optimize()
                 else:
-                    solution = optimizer.optimize_mode2(periods_per_teacher)
+                    # Mode 2 : récupérer les paramètres avancés
+                    threshold = None if closure_threshold == 0 else closure_threshold
+                    excluded = st.session_state.get('excluded_periods_mode2', [])
+                    solution = optimizer.optimize_mode2(
+                        periods_per_teacher=periods_per_teacher,
+                        closure_threshold=threshold,
+                        excluded_periods=excluded
+                    )
                 
                 # Sauvegarder dans session_state
                 st.session_state['optimizer'] = optimizer

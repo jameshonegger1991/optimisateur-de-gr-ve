@@ -1,0 +1,81 @@
+Objet : Outil d'optimisation pour la répartition des grèves - Simplifiez votre organisation
+
+Bonjour,
+
+Je vous écris pour vous présenter un outil que j'ai développé afin de faciliter l'organisation et la répartition des grèves au sein de nos établissements.
+
+🔗 Lien de l'application : https://jameshonegger1991-optimisateur-de-gr-ve.streamlit.app
+
+
+📌 POURQUOI UTILISER CET OUTIL ?
+
+Organiser une grève implique de coordonner des dizaines, voire des centaines d'enseignants, tout en respectant :
+- Les disponibilités de chacun
+- Les besoins spécifiques par période horaire
+- L'équité dans la répartition de la charge
+
+Faire cela manuellement est :
+❌ Chronophage (plusieurs heures de travail)
+❌ Sujet aux erreurs humaines
+❌ Difficile à optimiser équitablement
+❌ Compliqué à ajuster en cas de changement
+
+Notre outil automatise tout ce processus en quelques secondes, garantissant une répartition optimale et équitable.
+
+
+⚙️ COMMENT ÇA FONCTIONNE ?
+
+L'application propose 2 modes d'optimisation :
+
+📊 Mode 1 : Besoins fixes par période
+→ Vous définissez exactement combien de grévistes vous voulez sur chaque période
+→ L'algorithme trouve la répartition qui respecte ces besoins tout en minimisant et équilibrant la charge par enseignant
+→ Idéal quand vous avez des quotas stricts à atteindre
+
+📊 Mode 2 : Périodes fixes par enseignant
+→ Vous définissez le nombre maximum de périodes de grève par enseignant (ex: max 2 périodes)
+→ L'algorithme répartit équitablement en priorisant les périodes qui ont le plus besoin de grévistes
+→ Idéal pour limiter la charge individuelle tout en maximisant l'impact
+
+
+🎯 AVANTAGES CONCRETS
+
+✅ Gain de temps considérable : quelques secondes au lieu de plusieurs heures
+✅ Équité garantie : l'algorithme répartit la charge de manière optimale
+✅ Flexibilité : modifications manuelles possibles après l'optimisation
+✅ Accessibilité : application web, aucune installation nécessaire
+✅ Gratuit et sécurisé : vos données ne sont pas stockées, tout se fait en local dans votre navigateur
+✅ Documentation complète : guide d'utilisation intégré, templates fournis
+
+
+📝 UTILISATION SIMPLE EN 5 ÉTAPES
+
+1. Téléchargez le template Excel fourni
+2. Remplissez les disponibilités des enseignants (tableau 1)
+3. Définissez vos besoins par période (tableau 2)
+4. Uploadez le fichier et choisissez votre mode d'optimisation
+5. Téléchargez le résultat : planning prêt à l'emploi !
+
+
+💡 FONCTIONNALITÉS SUPPLÉMENTAIRES
+
+- Visualisation claire des statistiques (nombre de grévistes par période, charge par enseignant)
+- Modifications manuelles : retirer un gréviste ou chercher un remplaçant en un clic
+- Export Excel avec tous les détails
+- Templates et exemples fournis pour démarrer rapidement
+
+
+🔒 CONFIDENTIALITÉ ET SÉCURITÉ
+
+- Aucune donnée n'est stockée sur nos serveurs
+- Le traitement se fait directement dans votre navigateur
+- Code source ouvert et transparent
+- Aucune connexion ou compte nécessaire
+
+
+N'hésitez pas à tester l'outil et à me faire vos retours. Je reste à votre disposition pour toute question ou suggestion d'amélioration.
+
+Solidairement,
+
+[Votre nom]
+[Votre fonction/syndicat]
