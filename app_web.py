@@ -156,7 +156,7 @@ if uploaded_file is not None:
                 
                 # Sauvegarder le résultat
                 temp_output = "/tmp/resultat_optimise.xlsx"
-                optimizer.save_results(temp_output)
+                optimizer.save_to_excel(temp_output)
                 
                 # Afficher le succès
                 st.success("✅ Optimisation terminée avec succès !")
