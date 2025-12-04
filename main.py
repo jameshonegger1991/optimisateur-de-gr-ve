@@ -355,9 +355,10 @@ class GrevesOptimizer:
         # Poids pour prioriser les périodes avec besoins
         period_weights = []
         for j in range(num_periods):
-            if j < len(self.needs) and self.needs[j] > 0:
+            period = self.periods[j]
+            if period in self.required_strikers and self.required_strikers[period] > 0:
                 # Périodes avec besoin : poids = besoin (priorité haute)
-                period_weights.append(self.needs[j] * 100)
+                period_weights.append(self.required_strikers[period] * 100)
             else:
                 # Périodes sans besoin : poids minimal
                 period_weights.append(1)
@@ -381,9 +382,10 @@ class GrevesOptimizer:
         
         # Contrainte : ne pas dépasser les besoins sur chaque période
         for j in range(num_periods):
-            if j < len(self.needs) and self.needs[j] > 0:
+            period = self.periods[j]
+            if period in self.required_strikers and self.required_strikers[period] > 0:
                 # Plafonner au besoin pour ne pas gaspiller
-                prob += coverage_per_period[j] <= self.needs[j]
+                prob += coverage_per_period[j] <= self.required_strikers[period]
         
         # Lier coverage_per_period au nombre de grévistes effectifs
         for j in range(num_periods):
