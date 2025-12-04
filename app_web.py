@@ -214,15 +214,24 @@ with st.sidebar:
                             )
                             required_strikers[period] = need
             
-            # Toujours sauvegarder dans session_state (mise à jour automatique)
-            st.session_state['required_strikers_mode1'] = required_strikers
+            # Bouton de validation explicite
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                if st.button("✅ Valider les besoins", type="primary", use_container_width=True, key=f"validate_{file_key}"):
+                    st.session_state['required_strikers_mode1'] = required_strikers
+                    st.session_state['needs_validated'] = True
+                    st.success(f"✓ Besoins validés pour {len(required_strikers)} périodes !")
+                    st.rerun()
             
-            # Afficher confirmation
-            if required_strikers:
-                st.success(f"✅ Besoins configurés : {len(required_strikers)} périodes")
-                with st.expander("📋 Voir le détail"):
-                    for period, need in required_strikers.items():
-                        st.write(f"- **{period}** : {need} grévistes")
+            # Afficher l'état de validation
+            if st.session_state.get('needs_validated', False) and 'required_strikers_mode1' in st.session_state:
+                validated = st.session_state['required_strikers_mode1']
+                st.success(f"✅ {len(validated)} périodes validées")
+                with st.expander("📋 Détail des besoins validés"):
+                    for period, need in validated.items():
+                        st.write(f"**{period}** : {need} grévistes")
+            else:
+                st.warning("⚠️ Cliquez sur 'Valider les besoins' avant d'optimiser")
         else:
             st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
             st.session_state['required_strikers_mode1'] = None
@@ -328,7 +337,20 @@ with col1:
 
 with col2:
     st.markdown("## 🎯 ACTIONS")
-    optimize_button = st.button("⚡ LANCER L'OPTIMISATION", type="primary", use_container_width=True)
+    
+    # Vérifier si les besoins sont validés en Mode 1
+    can_optimize = True
+    if mode == 1:
+        if not st.session_state.get('needs_validated', False):
+            can_optimize = False
+            st.error("⚠️ Validez d'abord les besoins (barre latérale)")
+    
+    optimize_button = st.button(
+        "⚡ LANCER L'OPTIMISATION", 
+        type="primary", 
+        use_container_width=True,
+        disabled=not can_optimize
+    )
 
 # Zone de résultats
 st.markdown("---")
@@ -346,6 +368,8 @@ if uploaded_file is not None:
             optimizer = GrevesOptimizer(temp_input)
             st.session_state['optimizer'] = optimizer
             st.session_state['last_file'] = uploaded_file.name
+            st.session_state['needs_validated'] = False  # Réinitialiser la validation
+            st.session_state['required_strikers_mode1'] = None
             st.success(f"✓ Fichier chargé : {len(optimizer.teachers)} enseignants, {len(optimizer.periods)} périodes")
         
         if optimize_button:
