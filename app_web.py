@@ -395,6 +395,7 @@ if uploaded_file is not None:
                         # Récupérer la solution modifiée
                         solution = optimizer.solution
                         st.session_state['solution'] = solution
+                        st.session_state['last_replacement'] = f"{prenom} {nom} a été ajouté pour {period_to_replace}"
                         st.rerun()
                     else:
                         current = (solution[:, period_idx] == 2).sum()
@@ -403,6 +404,11 @@ if uploaded_file is not None:
                             st.info(f"✓ Aucun remplaçant nécessaire ({int(current)}/{int(needed)} grévistes)")
                         else:
                             st.warning("⚠ Aucun candidat disponible pour cette période")
+            
+            # Afficher la notification de remplacement si disponible
+            if 'last_replacement' in st.session_state:
+                st.success(f"✅ {st.session_state['last_replacement']}")
+                del st.session_state['last_replacement']
             
             # Bouton de téléchargement
             st.markdown("---")
