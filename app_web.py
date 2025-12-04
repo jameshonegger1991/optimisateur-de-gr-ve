@@ -108,7 +108,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     - ✅ Garantit que personne ne dépassera le nombre maximal de périodes
     - ✅ Maximise l'impact global de la grève
     - ✅ **Option seuil de fermeture** : cherche à atteindre un certain nombre de grévistes par période permettant de compromettre l'ouverture de l'établissement
-    - ✅ **Option exclusion** : permet d'exclure certaines périodes (pauses, récré, etc.)
+    - ✅ **Option exclusion** : permet d'exclure certaines périodes (pause de midi, ...)
     - ⚠️ N'utilise PAS de besoins fixes (contrairement au Mode 1)
     
     **Quand l'utiliser ?** Quand vous voulez maximiser l'impact tout en limitant la charge individuelle.
