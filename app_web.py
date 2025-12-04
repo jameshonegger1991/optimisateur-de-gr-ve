@@ -150,7 +150,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     R : Oui ! Utilisez les outils "Retirer un gréviste" et "Trouver un remplaçant" en bas de page.
     
     **Q : Les noms de périodes doivent-ils être identiques dans les 2 tableaux ?**  
-    R : Oui, absolument ! Si vous écrivez "P1" dans TABLEAU 1, écrivez "P1" dans TABLEAU 2.
+    R : Oui, absolument ! Gardez les mêmes noms de périodes partout (P1, P2, etc.).
     
     **Q : Combien d'enseignants et de périodes maximum ?**  
     R : Pas de limite ! Le programme peut gérer des centaines d'enseignants et de périodes.
@@ -173,6 +173,114 @@ with st.sidebar:
         index=0
     )
     
+    if mode == 1:
+        st.markdown("#### �� Configuration des besoins")
+        
+        # Vérifier si un fichier est chargé pour avoir les périodes
+        if 'optimizer' in st.session_state:
+            optimizer = st.session_state['optimizer']
+            
+            st.info("Définissez le nombre de grévistes souhaité pour chaque période")
+            
+            # Option : même nombre pour toutes les périodes ou personnalisé
+            uniform_need = st.checkbox(
+                "Utiliser le même nombre pour toutes les périodes",
+                value=True,
+                help="Cochez pour définir un seul nombre appliqué à toutes les périodes"
+            )
+            
+            required_strikers = {}
+            
+            if uniform_need:
+                default_need = st.number_input(
+                    "Nombre de grévistes souhaité (toutes périodes)",
+                    min_value=1,
+                    max_value=len(optimizer.teachers),
+                    value=min(5, len(optimizer.teachers)),
+                    step=1,
+                    help="Ce nombre sera appliqué à toutes les périodes"
+                )
+                for period in optimizer.periods:
+                    required_strikers[period] = default_need
+            else:
+                st.markdown("Définissez les besoins par période :")
+                cols_per_row = 3
+                periods = optimizer.periods
+                
+                for idx in range(0, len(periods), cols_per_row):
+                    cols = st.columns(cols_per_row)
+                    for col_idx, period in enumerate(periods[idx:idx+cols_per_row]):
+                        with cols[col_idx]:
+                            need = st.number_input(
+                                f"{period}",
+                                min_value=0,
+                                max_value=len(optimizer.teachers),
+                                value=min(5, len(optimizer.teachers)),
+                                step=1,
+                                key=f"need_{period}"
+                            )
+                            required_strikers[period] = need
+            
+            st.session_state['required_strikers_mode1'] = required_strikers
+        else:
+            st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
+            st.session_state['required_strikers_mode1'] = None
+    
+    if mode == 1:
+        st.markdown("#### �� Configuration des besoins")
+        
+        # Vérifier si un fichier est chargé pour avoir les périodes
+        if 'optimizer' in st.session_state:
+            optimizer = st.session_state['optimizer']
+            
+            st.info("Définissez le nombre de grévistes souhaité pour chaque période")
+            
+            # Option : même nombre pour toutes les périodes ou personnalisé
+            uniform_need = st.checkbox(
+                "Utiliser le même nombre pour toutes les périodes",
+                value=True,
+                help="Cochez pour définir un seul nombre appliqué à toutes les périodes"
+            )
+            
+            required_strikers = {}
+            
+            if uniform_need:
+                default_need = st.number_input(
+                    "Nombre de grévistes souhaité (toutes périodes)",
+                    min_value=1,
+                    max_value=len(optimizer.teachers),
+                    value=min(5, len(optimizer.teachers)),
+                    step=1,
+                    help="Ce nombre sera appliqué à toutes les périodes"
+                )
+                for period in optimizer.periods:
+                    required_strikers[period] = default_need
+            else:
+                st.markdown("Définissez les besoins par période :")
+                cols_per_row = 3
+                periods = optimizer.periods
+                
+                for idx in range(0, len(periods), cols_per_row):
+                    cols = st.columns(cols_per_row)
+                    for col_idx, period in enumerate(periods[idx:idx+cols_per_row]):
+                        with cols[col_idx]:
+                            need = st.number_input(
+                                f"{period}",
+                                min_value=0,
+                                max_value=len(optimizer.teachers),
+                                value=min(5, len(optimizer.teachers)),
+                                step=1,
+                                key=f"need_{period}"
+                            )
+                            required_strikers[period] = need
+            
+            st.session_state['required_strikers_mode1'] = required_strikers
+        else:
+            st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
+            st.session_state['required_strikers_mode1'] = None
+    
+    elif mode == 2:
+    elif mode == 2:
     if mode == 2:
         periods_per_teacher = st.number_input(
             "Nombre maximum de périodes grévées par enseignant",
@@ -211,11 +319,11 @@ with st.sidebar:
     st.markdown("### 💡 Aide")
     if mode == 1:
         st.info("""
-        **Mode 1** : Atteindre exactement les besoins en grévistes par période tout en minimisant et équilibrant la charge.
+        **Mode 1** : Atteindre exactement les besoins en grévistes par période.
         
-        Votre fichier Excel doit avoir :
-        - TABLEAU 1 : Disponibilités (1 si l'enseignant travaille, 0 sinon)
-        - TABLEAU 2 : Besoins par période
+        1. Chargez votre fichier Excel (TABLEAU 1 : disponibilités)
+        2. Définissez les besoins par période dans l'interface ci-dessus
+        3. L'algorithme respecte exactement ces besoins tout en équilibrant la charge
         """)
     else:
         st.info("""
@@ -228,7 +336,7 @@ with st.sidebar:
         
         Votre fichier Excel doit avoir :
         - TABLEAU 1 : Disponibilités (1 si l'enseignant travaille, 0 sinon)
-        - TABLEAU 2 : Non utilisé en Mode 2
+
         """)
 
 # Zone principale
@@ -269,7 +377,7 @@ with col1:
     uploaded_file = st.file_uploader(
         "Sélectionnez votre fichier Excel",
         type=['xlsx'],
-        help="Le fichier doit contenir 2 onglets : TABLEAU 1 (disponibilités) et TABLEAU 2 (besoins)"
+        help="Le fichier doit contenir TABLEAU 1 (disponibilités des enseignants par période)"
     )
 
 with col2:
@@ -294,7 +402,11 @@ if uploaded_file is not None:
                 
                 # Lancer l'optimisation selon le mode
                 if mode == 1:
-                    solution = optimizer.optimize()
+                    required_strikers = st.session_state.get('required_strikers_mode1', None)
+                    if required_strikers is None:
+                        st.error("⚠️ Veuillez configurer les besoins par période en Mode 1")
+                        st.stop()
+                    solution = optimizer.optimize(required_strikers=required_strikers)
                 else:
                     # Mode 2 : récupérer les paramètres avancés
                     threshold = None if closure_threshold == 0 else closure_threshold

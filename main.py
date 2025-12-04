@@ -111,37 +111,19 @@ class GrevesOptimizer:
                             except:
                                 pass
         
-        # Méthode 2: Chercher dans le fichier raw pour les besoins (template)
-        if not self.required_strikers:
-            tableau2_row = None
-            for idx in range(len(df_raw)):
-                cell_value = str(df_raw.iloc[idx, 0]) if pd.notna(df_raw.iloc[idx, 0]) else ""
-                if 'TABLEAU 2' in cell_value:
-                    tableau2_row = idx
-                    break
-            
-            if tableau2_row is not None:
-                # Les données de besoins commencent 2 lignes après "TABLEAU 2"
-                besoins_start = tableau2_row + 2
-                for i in range(besoins_start, min(besoins_start + 15, len(df_raw))):
-                    period = df_raw.iloc[i, 0]
-                    need = df_raw.iloc[i, 1]
-                    
-                    if pd.notna(period) and pd.notna(need):
-                        period_str = str(period).strip()
-                        if period_str.startswith('P') and len(period_str) == 2:
-                            try:
-                                need_int = int(float(need))
-                                self.required_strikers[period_str] = need_int
-                            except:
-                                pass
         
-        print(f"Enseignants chargés: {len(self.teachers)}")
-        print(f"Périodes: {self.periods}")
-        print(f"Besoins par période: {self.required_strikers}")
-        
-    def optimize(self):
+    def optimize(self, required_strikers=None):
         """Optimiser la sélection des grévistes"""
+        # Utiliser required_strikers passé en paramètre, sinon celui du fichier
+        if required_strikers is not None:
+            self.required_strikers = required_strikers
+        elif not hasattr(self, 'required_strikers') or not self.required_strikers:
+            raise ValueError("Aucun besoin spécifié. Fournir required_strikers en paramètre ou dans le fichier Excel.")
+        
+        if required_strikers is not None:
+            self.required_strikers = required_strikers
+            raise ValueError("Aucun besoin spécifié. Fournir required_strikers en paramètre ou dans le fichier Excel.")
+        
         num_teachers = len(self.teachers)
         num_periods = len(self.periods)
         
