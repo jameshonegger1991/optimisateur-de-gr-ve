@@ -57,7 +57,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     
     ### 📝 Comment préparer votre fichier Excel ?
     
-    Votre fichier doit contenir **2 onglets (feuilles)** :
+    Votre fichier doit contenir **TABLEAU 1** (un seul tableau) :
     
     #### 📊 TABLEAU 1 : Les disponibilités
     
@@ -69,19 +69,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     
     - **Colonnes** : les périodes de grève (P1, P2, P3... ou Lundi 8h, Mardi 10h, etc.)
     - **Lignes** : les noms des enseignants
-    - **Cellules** : inscrivez **1** pour les périodes où l'enseignant travaille (peut faire grève), **0** sinon
-    
-    #### 📊 TABLEAU 2 : Les besoins
-    
-    | Période | Grévistes nécessaires |
-    |---------|-----------------------|
-    | P1      | 5                     |
-    | P2      | 3                     |
-    | P3      | 7                     |
-    | P4      | 2                     |
-    
-    - **Colonne 1** : les périodes (mêmes noms que dans TABLEAU 1)
-    - **Colonne 2** : combien de grévistes vous voulez sur chaque période
+    - **Cellules** : inscrivez **1** pour les périodes où l'enseignant enseigne (peut faire grève), **0** sinon
     
     ---
     
@@ -90,6 +78,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     #### 🎯 Mode 1 : Besoins fixes par période
     **Objectif** : Atteindre exactement le nombre de grévistes demandé sur chaque période
     
+    - ✅ Définissez les besoins **directement dans l'interface** (après upload du fichier)
     - ✅ Respecte exactement vos besoins (si vous demandez 5 grévistes, il y en aura 5)
     - ✅ Équilibre la charge entre les enseignants (évite qu'une personne fasse trop de grèves)
     - ✅ Minimise le nombre total de grèves
@@ -106,7 +95,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     - ✅ Maximise l'impact global de la grève
     - ✅ **Option seuil de fermeture** : cherche à fermer un maximum de périodes (atteindre le seuil partout)
     - ✅ **Option exclusion** : permet d'exclure certaines périodes (pauses, récré, etc.)
-    - ⚠️ Ne respecte PAS le TABLEAU 2 (besoins) - Mode 2 ignore ces données
+    - ⚠️ N'utilise PAS de besoins fixes (contrairement au Mode 1)
     
     **Quand l'utiliser ?** Quand vous voulez maximiser l'impact tout en limitant la charge individuelle.
     
@@ -120,10 +109,11 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     ### 🚀 Comment utiliser le programme ?
     
     1. **Téléchargez le template** (bouton "📄 Template vide") ou utilisez l'exemple
-    2. **Remplissez les 2 tableaux** dans Excel avec vos données
+    2. **Remplissez TABLEAU 1** dans Excel avec les disponibilités
     3. **Uploadez votre fichier** en cliquant sur "Browse files"
     4. **Choisissez votre mode** dans la barre latérale (Mode 1 ou Mode 2)
-    5. **Cliquez sur "⚡ LANCER L'OPTIMISATION"**
+    5. **En Mode 1** : configurez les besoins par période dans l'interface
+    6. **Cliquez sur "⚡ LANCER L'OPTIMISATION"**
     6. **Consultez les résultats** : statistiques, répartition par enseignant et par période
     7. **Modifiez si besoin** : retirez ou ajoutez des grévistes manuellement
     8. **Téléchargez le résultat** : fichier Excel prêt à l'emploi avec le planning final
@@ -149,8 +139,8 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     **Q : Puis-je modifier les résultats après l'optimisation ?**  
     R : Oui ! Utilisez les outils "Retirer un gréviste" et "Trouver un remplaçant" en bas de page.
     
-    **Q : Les noms de périodes doivent-ils être identiques dans les 2 tableaux ?**  
-    R : Oui, absolument ! Gardez les mêmes noms de périodes partout (P1, P2, etc.).
+    **Q : Dois-je préparer mes besoins dans Excel ?**  
+    R : Non ! En Mode 1, les besoins se définissent dans l'interface web après avoir chargé le fichier. Seul TABLEAU 1 (disponibilités) est nécessaire dans Excel.
     
     **Q : Combien d'enseignants et de périodes maximum ?**  
     R : Pas de limite ! Le programme peut gérer des centaines d'enseignants et de périodes.
@@ -393,10 +383,17 @@ if uploaded_file is not None:
         with open(temp_input, "wb") as f:
             f.write(uploaded_file.getvalue())
         
+        # Charger l'optimizer dès l'upload pour accéder aux périodes
+        if 'optimizer' not in st.session_state or st.session_state.get('last_file') != uploaded_file.name:
+            optimizer = GrevesOptimizer(temp_input)
+            st.session_state['optimizer'] = optimizer
+            st.session_state['last_file'] = uploaded_file.name
+            st.success(f"✓ Fichier chargé : {len(optimizer.teachers)} enseignants, {len(optimizer.periods)} périodes")
+        
         if optimize_button:
             with st.spinner("🔄 Optimisation en cours..."):
-                # Créer l'optimiseur
-                optimizer = GrevesOptimizer(temp_input)
+                # Récupérer l'optimiseur du session_state
+                optimizer = st.session_state['optimizer']
                 
                 # Lancer l'optimisation selon le mode
                 if mode == 1:
