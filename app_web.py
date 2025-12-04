@@ -193,7 +193,7 @@ with st.sidebar:
         
         if uniform_need:
             default_need = st.number_input(
-                "Nombre de grévistes souhaité (toutes périodes)",
+                "Nombre de grévistes souhaité par période",
                 min_value=1,
                 max_value=max_teachers,
                 value=min(5, max_teachers),
