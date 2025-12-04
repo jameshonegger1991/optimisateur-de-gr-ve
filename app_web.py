@@ -95,7 +95,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     - ✅ Définissez les besoins **directement dans l'interface** (après upload du fichier)
     - ✅ Respecte exactement vos besoins (si vous demandez 5 grévistes, il y en aura 5)
     - ✅ Équilibre la charge entre les enseignants (évite qu'une personne ne grève des périodes "dans le vide")
-    - ✅ Minimise le nombre total de grèves
+    - ✅ Minimise le nombre total de périodes grévées
     - ⚠️ Peut échouer si impossible (pas assez de disponibilités)
     
     **Quand l'utiliser ?** Quand vous avez des quotas stricts à respecter par période.
