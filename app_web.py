@@ -90,18 +90,35 @@ col1, col2 = st.columns([1, 1])
 with col1:
     st.markdown("## 📁 FICHIER D'ENTRÉE")
     
-    # Bouton de téléchargement du template
-    try:
-        with open("template_greve.xlsx", "rb") as template_file:
-            st.download_button(
-                label="📥 Télécharger le fichier template",
-                data=template_file,
-                file_name="template_greve.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
-            )
-    except FileNotFoundError:
-        st.info("💡 Créez un fichier Excel avec 2 onglets : TABLEAU 1 (disponibilités) et TABLEAU 2 (besoins)")
+    # Boutons de téléchargement
+    col_btn1, col_btn2 = st.columns(2)
+    
+    with col_btn1:
+        try:
+            with open("template_greve.xlsx", "rb") as template_file:
+                st.download_button(
+                    label="📄 Template vide",
+                    data=template_file,
+                    file_name="template_greve.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            pass
+    
+    with col_btn2:
+        try:
+            with open("template_greve_test_50.xlsx", "rb") as test_file:
+                st.download_button(
+                    label="🧪 Exemple de test",
+                    data=test_file,
+                    file_name="exemple_test.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                    help="Fichier pré-rempli pour tester l'application"
+                )
+        except FileNotFoundError:
+            pass
     
     st.markdown("###")
     
