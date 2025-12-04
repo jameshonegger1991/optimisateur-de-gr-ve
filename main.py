@@ -120,9 +120,6 @@ class GrevesOptimizer:
         elif not hasattr(self, 'required_strikers') or not self.required_strikers:
             raise ValueError("Aucun besoin spécifié. Fournir required_strikers en paramètre ou dans le fichier Excel.")
         
-        if required_strikers is not None:
-            self.required_strikers = required_strikers
-            raise ValueError("Aucun besoin spécifié. Fournir required_strikers en paramètre ou dans le fichier Excel.")
         
         num_teachers = len(self.teachers)
         num_periods = len(self.periods)

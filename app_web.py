@@ -383,9 +383,6 @@ if uploaded_file is not None:
                     required_strikers = st.session_state.get('required_strikers_mode1', None)
                     
                     # DEBUG
-                    st.write("DEBUG session_state keys:", list(st.session_state.keys()))
-                    st.write("DEBUG required_strikers:", required_strikers)
-                    st.write("DEBUG needs_validated:", st.session_state.get('needs_validated'))
                     
                     if required_strikers is None or not required_strikers:
                         st.error("⚠️ **Les besoins n'ont pas été validés !**")
