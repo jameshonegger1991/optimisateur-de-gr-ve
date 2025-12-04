@@ -328,12 +328,18 @@ class GrevesOptimizer:
         return solution
     
     def optimize_mode2(self, periods_per_teacher, closure_threshold=None, excluded_periods=None):
-        """Mode 2 : Maximiser le nombre de grévistes avec limite par enseignant
+        """Mode 2 : Maximiser l'impact en respectant limite par enseignant
 
         Args:
             periods_per_teacher: Nombre maximum de périodes par enseignant
-            closure_threshold: Seuil minimal de grévistes pour fermer l'établissement (optionnel)
-            excluded_periods: Liste des périodes à exclure (pas de grèves souhaitées)
+            closure_threshold: Seuil pour fermer une période (optionnel)
+            excluded_periods: Liste des périodes à exclure
+
+        Logique :
+        - Maximise le nombre de périodes qui atteignent le seuil (si fourni)
+        - Sinon, maximise le nombre total de grévistes
+        - Équilibre la charge entre enseignants
+        - IGNORE complètement TABLEAU 2 (required_strikers)
         """
         num_teachers = len(self.teachers)
         num_periods = len(self.periods)
@@ -346,14 +352,14 @@ class GrevesOptimizer:
 
         print(f"\n=== MODE 2 : Max {periods_per_teacher} périodes par enseignant ===")
         if closure_threshold:
-            print(f"Seuil de fermeture : {closure_threshold} grévistes par période")
+            print(f"Seuil de fermeture : {closure_threshold} grévistes/période")
         if excluded_periods:
-            print(f"Périodes exclues : {excluded_periods}")
+            print(f"Périodes exclues : {', '.join(excluded_periods)}")
 
         # Créer le problème d'optimisation
         prob = pulp.LpProblem("Strike_Mode2_Maximize", pulp.LpMaximize)
 
-        # Variables de décision
+        # Variables de décision : strike[i][j] = 1 si enseignant i grève période j
         strike = [[pulp.LpVariable(f"strike_{i}_{j}", cat='Binary') 
                    for j in range(num_periods)] for i in range(num_teachers)]
 
@@ -361,25 +367,42 @@ class GrevesOptimizer:
         strikers_per_period = [pulp.LpVariable(f"strikers_{j}", lowBound=0, cat='Integer')
                                for j in range(num_periods)]
 
-        # OBJECTIF : Maximiser le nombre total de grévistes
-        # Si seuil connu : pénaliser légèrement le dépassement pour encourager la répartition
         if closure_threshold:
-            # Variable auxiliaire : dépassement du seuil par période
-            excess = [pulp.LpVariable(f"excess_{j}", lowBound=0, cat='Integer')
-                      for j in range(num_periods)]
+            # Variable binaire : période j atteint le seuil (1) ou non (0)
+            period_closed = [pulp.LpVariable(f"closed_{j}", cat='Binary')
+                            for j in range(num_periods)]
 
-            # Définir l'excès : excess[j] = max(0, strikers[j] - threshold)
+            # Contrainte : period_closed[j] = 1 SSI strikers_per_period[j] >= threshold
+            M = num_teachers  # Big M
             for j in range(num_periods):
-                prob += excess[j] >= strikers_per_period[j] - closure_threshold
-                prob += excess[j] >= 0
+                # Si closed = 1, alors strikers >= threshold
+                prob += strikers_per_period[j] >= closure_threshold * period_closed[j]
+                # Si closed = 1, alors strikers <= threshold (pas de surplus inutile)
+                prob += strikers_per_period[j] <= closure_threshold + M * (1 - period_closed[j])
+                # Si strikers >= threshold, alors closed doit être 1
+                prob += period_closed[j] * M >= strikers_per_period[j] - closure_threshold + 1
 
-            # Objectif : maximiser total - 0.1 * excès (encourage à atteindre seuil sans trop dépasser)
-            total_strikers = pulp.lpSum([strikers_per_period[j] for j in range(num_periods)])
-            total_excess = pulp.lpSum([excess[j] for j in range(num_periods)])
-            prob += total_strikers - 0.1 * total_excess
+            # OBJECTIF : Maximiser le nombre de périodes fermées
+            # Objectif secondaire : minimiser l'écart-type de la charge (via max-min)
+            max_load = pulp.LpVariable("max_load", lowBound=0, cat='Integer')
+
+            for i in range(num_teachers):
+                prob += pulp.lpSum([strike[i][j] for j in range(num_periods)]) <= max_load
+
+            # Priorité 1 : maximiser périodes fermées (poids 1000)
+            # Priorité 2 : minimiser charge max (poids 1)
+            prob += 1000 * pulp.lpSum([period_closed[j] for j in range(num_periods)]) - max_load
+
         else:
-            # Sans seuil : simple maximisation du total
-            prob += pulp.lpSum([strikers_per_period[j] for j in range(num_periods)])
+            # Sans seuil : maximiser total en équilibrant la charge
+            max_load = pulp.LpVariable("max_load", lowBound=0, cat='Integer')
+
+            for i in range(num_teachers):
+                prob += pulp.lpSum([strike[i][j] for j in range(num_periods)]) <= max_load
+
+            # Maximiser total - charge max (pour équilibrer)
+            total = pulp.lpSum([strikers_per_period[j] for j in range(num_periods)])
+            prob += total - max_load
 
         # Contraintes de disponibilité
         for i in range(num_teachers):
@@ -393,9 +416,10 @@ class GrevesOptimizer:
                 j = self.periods.index(period_name)
                 prob += strikers_per_period[j] == 0
 
-        # Contrainte : chaque enseignant grève AU MAXIMUM periods_per_teacher périodes
+        # Contrainte : chaque enseignant AU MAXIMUM periods_per_teacher périodes
         for i in range(num_teachers):
-            available_periods = sum(1 for j in range(num_periods) if self.availability[i][j] > 0)
+            available_periods = sum(1 for j in range(num_periods) 
+                                   if self.availability[i][j] > 0 and self.periods[j] not in excluded_periods)
             max_periods = min(periods_per_teacher, available_periods)
             prob += pulp.lpSum([strike[i][j] for j in range(num_periods)]) <= max_periods
 
@@ -405,14 +429,13 @@ class GrevesOptimizer:
 
         # Résoudre
         print("\nRésolution du problème d'optimisation...")
-        
-        # Essayer différents solveurs dans l'ordre de préférence
+
         solvers_to_try = [
             ('CyLP', lambda: pulp.getSolver('CyLP', msg=0)),
-            ('COIN_CMD', lambda: pulp.COIN_CMD(msg=0, timeLimit=30)),
-            ('PULP_CBC_CMD', lambda: pulp.PULP_CBC_CMD(msg=0, timeLimit=30)),
+            ('COIN_CMD', lambda: pulp.COIN_CMD(msg=0, timeLimit=60)),
+            ('PULP_CBC_CMD', lambda: pulp.PULP_CBC_CMD(msg=0, timeLimit=60)),
         ]
-        
+
         solved = False
         for solver_name, solver_func in solvers_to_try:
             try:
@@ -425,11 +448,10 @@ class GrevesOptimizer:
             except Exception as e:
                 print(f"Échec du solveur {solver_name}: {e}")
                 continue
-        
+
         if not solved:
             print("Aucun solveur disponible, tentative avec le solveur par défaut...")
             prob.solve()
-        
 
         # Vérifier le statut
         status = pulp.LpStatus[prob.status]
@@ -461,6 +483,15 @@ class GrevesOptimizer:
                                if (solution[:, j] == 2).sum() >= closure_threshold)
             print(f"✓ Périodes fermées (≥{closure_threshold} grévistes) : {periods_closed}")
 
+        # Répartition par enseignant
+        load_per_teacher = [(solution[i, :] == 2).sum() for i in range(num_teachers)]
+        teachers_involved = sum(1 for load in load_per_teacher if load > 0)
+        if teachers_involved > 0:
+            avg_load = sum(load_per_teacher) / teachers_involved
+            max_load_val = max(load_per_teacher)
+            print(f"✓ Charge moyenne : {avg_load:.1f} périodes/enseignant")
+            print(f"✓ Charge maximale : {max_load_val} périodes/enseignant")
+
         # Afficher répartition par période
         print("\nRépartition par période :")
         for j in range(num_periods):
@@ -477,30 +508,6 @@ class GrevesOptimizer:
 
         return solution
 
-        """Algorithme glouton pour Mode 2"""
-        print("INFO: Utilisation d'un algorithme glouton pour Mode 2")
-        
-        solution = np.zeros_like(self.availability, dtype=int)
-        
-        # Pour chaque enseignant, sélectionner ses périodes de grève
-        for i in range(num_teachers):
-            # Trouver toutes les périodes où il est disponible
-            available = [j for j in range(num_periods) if self.availability[i][j] > 0]
-            
-            # Sélectionner min(periods_per_teacher, len(available)) périodes
-            num_to_select = min(periods_per_teacher, len(available))
-            
-            # Stratégie : choisir les périodes qui ont le moins de grévistes pour l'instant
-            period_counts = [(j, sum(1 for ii in range(num_teachers) if solution[ii][j] == 2)) 
-                           for j in available]
-            period_counts.sort(key=lambda x: x[1])  # Trier par nombre croissant de grévistes
-            
-            # Sélectionner les num_to_select premières
-            for j, _ in period_counts[:num_to_select]:
-                solution[i][j] = 2
-        
-        return solution
-    
     def _solve_with_greedy(self, num_teachers, num_periods):
         """Solveur de fallback ultime utilisant un algorithme glouton simple
         
