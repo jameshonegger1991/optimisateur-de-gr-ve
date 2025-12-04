@@ -214,11 +214,19 @@ with st.sidebar:
                             )
                             required_strikers[period] = need
             
-            st.session_state['required_strikers_mode1'] = required_strikers
+            # Bouton pour valider les besoins
+            if st.button("✅ Valider les besoins", type="primary", use_container_width=True, key=f"validate_needs_{file_key}"):
+                st.session_state['required_strikers_mode1'] = required_strikers
+                st.success(f"✓ Besoins validés pour {len(required_strikers)} périodes !")
+                st.balloons()
             
-            # Affichage de confirmation
-            if required_strikers:
-                st.success(f"✓ Besoins configurés pour {len(required_strikers)} périodes")
+            # Afficher l'état actuel
+            if 'required_strikers_mode1' in st.session_state and st.session_state['required_strikers_mode1']:
+                validated = st.session_state['required_strikers_mode1']
+                st.info(f"📌 **Besoins actuellement validés** : {len(validated)} périodes")
+                with st.expander("Voir le détail"):
+                    for period, need in validated.items():
+                        st.write(f"- **{period}** : {need} grévistes")
         else:
             st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
             st.session_state['required_strikers_mode1'] = None
