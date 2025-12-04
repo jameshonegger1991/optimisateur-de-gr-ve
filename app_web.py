@@ -215,6 +215,10 @@ with st.sidebar:
                             required_strikers[period] = need
             
             st.session_state['required_strikers_mode1'] = required_strikers
+            
+            # Affichage de confirmation
+            if required_strikers:
+                st.success(f"✓ Besoins configurés pour {len(required_strikers)} périodes")
         else:
             st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
             st.session_state['required_strikers_mode1'] = None
@@ -347,10 +351,21 @@ if uploaded_file is not None:
                 
                 # Lancer l'optimisation selon le mode
                 if mode == 1:
+                    # Récupérer required_strikers depuis session_state
+                    # (mis à jour par la sidebar)
                     required_strikers = st.session_state.get('required_strikers_mode1', None)
-                    if required_strikers is None:
-                        st.error("⚠️ Veuillez configurer les besoins par période en Mode 1")
+                    
+                    if required_strikers is None or not required_strikers:
+                        st.error("⚠️ **Mode 1 nécessite la configuration des besoins**")
+                        st.info("""
+                        **Étapes :**
+                        1. Assurez-vous que votre fichier Excel est chargé
+                        2. Dans la barre latérale (←), configurez les besoins par période
+                        3. Les besoins apparaîtront automatiquement après le chargement du fichier
+                        4. Relancez l'optimisation
+                        """)
                         st.stop()
+                    
                     solution = optimizer.optimize(required_strikers=required_strikers)
                 else:
                     # Mode 2 : récupérer les paramètres avancés
