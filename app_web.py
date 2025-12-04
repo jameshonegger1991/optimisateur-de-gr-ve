@@ -266,6 +266,12 @@ if uploaded_file is not None:
                 st.session_state['optimizer'] = optimizer
                 st.session_state['solution'] = solution
                 st.session_state['mode'] = mode
+                # Dictionnaire pour tracker les exclusions manuelles: {period: [teacher_indices]}
+                if 'manual_exclusions' not in st.session_state:
+                    st.session_state['manual_exclusions'] = {}
+                # Dictionnaire pour tracker les exclusions manuelles: {period: [teacher_indices]}
+                if 'manual_exclusions' not in st.session_state:
+                    st.session_state['manual_exclusions'] = {}
                 
                 st.success("✅ Optimisation terminée avec succès !")
         
@@ -374,6 +380,13 @@ if uploaded_file is not None:
                             if str(teacher) == person_to_remove:
                                 solution[i, period_idx] = optimizer.availability[i][period_idx]
                                 st.session_state['solution'] = solution
+                                st.session_state['last_removal'] = f"{person_to_remove} a été retiré de {period_to_remove}"
+                                # Ajouter à la liste d'exclusion pour cette période
+                                if 'manual_exclusions' not in st.session_state:
+                                    st.session_state['manual_exclusions'] = {}
+                                if period_to_remove not in st.session_state['manual_exclusions']:
+                                    st.session_state['manual_exclusions'][period_to_remove] = []
+                                st.session_state['manual_exclusions'][period_to_remove].append(i)
                                 st.rerun()
                 else:
                     st.info("Aucun gréviste sur cette période")
@@ -388,7 +401,9 @@ if uploaded_file is not None:
                 
                 if st.button("➕ Chercher un remplaçant", key="btn_find", use_container_width=True):
                     period_idx = optimizer.periods.index(period_to_replace)
-                    replacement = optimizer.find_replacement(period_idx, interactive=False)
+                    # Récupérer les exclusions pour cette période
+                    excluded = st.session_state.get('manual_exclusions', {}).get(period_to_replace, [])
+                    replacement = optimizer.find_replacement(period_idx, interactive=False, excluded_indices=excluded)
                     
                     if replacement:
                         teacher_idx, prenom, nom = replacement
@@ -405,7 +420,11 @@ if uploaded_file is not None:
                         else:
                             st.warning("⚠ Aucun candidat disponible pour cette période")
             
-            # Afficher la notification de remplacement si disponible
+            # Afficher les notifications
+            if 'last_removal' in st.session_state:
+                st.success(f"✅ {st.session_state['last_removal']}")
+                del st.session_state['last_removal']
+            
             if 'last_replacement' in st.session_state:
                 st.success(f"✅ {st.session_state['last_replacement']}")
                 del st.session_state['last_replacement']

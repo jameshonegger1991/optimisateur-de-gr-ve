@@ -766,8 +766,17 @@ class GrevesOptimizer:
         # Trouver un remplaçant
         self.find_replacement(period_idx)
     
-    def find_replacement(self, period_idx, interactive=True):
-        """Trouver un remplaçant pour une période"""
+    def find_replacement(self, period_idx, interactive=True, excluded_indices=None):
+        """Trouver un remplaçant pour une période
+        
+        Args:
+            period_idx: Index de la période
+            interactive: Mode interactif (True) ou automatique (False)
+            excluded_indices: Liste des indices d'enseignants à exclure (retraits manuels)
+        """
+        if excluded_indices is None:
+            excluded_indices = []
+            
         period = self.periods[period_idx]
         
         # Compter les grévistes actuels cette période
@@ -783,8 +792,10 @@ class GrevesOptimizer:
         for i, (prenom, nom) in enumerate(self.teachers):
             prenom = str(prenom).upper().strip()
             nom = str(nom).upper().strip()
-            # Disponible si : pas encore gréviste cette période ET disponible (1 ou 2)
-            if self.solution[i][period_idx] != 2 and self.availability[i][period_idx] in [1, 2]:
+            # Disponible si : pas encore gréviste cette période ET disponible (1 ou 2) ET pas exclu manuellement
+            if (self.solution[i][period_idx] != 2 and 
+                self.availability[i][period_idx] in [1, 2] and 
+                i not in excluded_indices):
                 # Compter combien de périodes cette personne gréverait
                 future_strikes = sum(1 for j in range(len(self.periods)) if self.solution[i][j] == 2) + 1
                 candidates.append((i, prenom, nom, future_strikes))
