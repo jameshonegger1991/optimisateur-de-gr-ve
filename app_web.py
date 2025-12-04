@@ -354,6 +354,10 @@ with col2:
         use_container_width=True,
         disabled=not can_optimize
     )
+    
+    # Vérifier si un fichier est chargé
+    if optimize_button and uploaded_file is None:
+        st.error("❌ Veuillez d'abord charger un fichier Excel")
 
 # Zone de résultats
 st.markdown("---")
