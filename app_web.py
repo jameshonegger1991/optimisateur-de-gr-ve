@@ -89,39 +89,6 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.markdown("## 📁 FICHIER D'ENTRÉE")
-    
-    # Boutons de téléchargement
-    col_btn1, col_btn2 = st.columns(2)
-    
-    with col_btn1:
-        try:
-            with open("template_greve.xlsx", "rb") as template_file:
-                st.download_button(
-                    label="📄 Template vide",
-                    data=template_file,
-                    file_name="template_greve.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True
-                )
-        except FileNotFoundError:
-            pass
-    
-    with col_btn2:
-        try:
-            with open("template_greve_test_50.xlsx", "rb") as test_file:
-                st.download_button(
-                    label="🧪 Exemple de test",
-                    data=test_file,
-                    file_name="exemple_test.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True,
-                    help="Fichier pré-rempli pour tester l'application"
-                )
-        except FileNotFoundError:
-            pass
-    
-    st.markdown("###")
-    
     uploaded_file = st.file_uploader(
         "Sélectionnez votre fichier Excel",
         type=['xlsx'],
@@ -212,7 +179,7 @@ if uploaded_file is not None:
                     else:
                         needed = "-"
                     
-                    teachers_list = [str(optimizer.teachers[i]) for i in range(len(optimizer.teachers)) 
+                    teachers_list = [optimizer.teachers[i] for i in range(len(optimizer.teachers)) 
                                     if solution[i, j] == 2]
                     
                     period_stats.append({
