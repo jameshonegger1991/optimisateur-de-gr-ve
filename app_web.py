@@ -166,6 +166,10 @@ with st.sidebar:
     if mode == 1:
         st.markdown("#### 📊 Configuration des besoins")
         
+        # Message d'instruction
+        if 'optimizer' not in st.session_state:
+            st.info("📁 Chargez d'abord un fichier Excel (ci-dessous) pour configurer les besoins spécifiques")
+        
         # Vérifier si un fichier est chargé pour avoir les périodes
         if 'optimizer' in st.session_state:
             optimizer = st.session_state['optimizer']
@@ -231,8 +235,9 @@ with st.sidebar:
                         st.write(f"**{period}** : {need} grévistes")
             else:
                 st.warning("⚠️ Cliquez sur 'Valider les besoins' avant d'optimiser")
-        else:
-            st.warning("📁 Veuillez d'abord charger un fichier Excel pour configurer les besoins")
+        # Si pas d'optimizer, le message est déjà affiché en haut
+        # Réinitialiser les besoins si pas de fichier
+        if 'optimizer' not in st.session_state:
             st.session_state['required_strikers_mode1'] = None
     
     elif mode == 2:
