@@ -67,7 +67,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     | Martin Pierre | 1 | 0 | 1 | 1 | 1 | ... |
     | Bernard Julie | 0 | 1 | 1 | 0 | 1 | ... |
     
-    - **Colonnes** : les périodes de grève (P1, P2, P3... ou Lundi 8h, Mardi 10h, etc.)
+    - **Colonnes** : les périodes de grève (P1, P2, P3... , c'est-à-dire période 1, période 2, période 3)
     - **Lignes** : les noms des enseignants
     - **Cellules** : inscrivez **1** pour les périodes où l'enseignant enseigne (peut faire grève), **0** sinon
     
@@ -232,7 +232,7 @@ with st.sidebar:
             else:
                 st.warning("⚠️ Cliquez sur 'Valider les besoins' avant d'optimiser")
         else:
-            st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
+            st.warning("📁 Veuillez d'abord charger un fichier Excel pour configurer les besoins")
             st.session_state['required_strikers_mode1'] = None
     
     elif mode == 2:
