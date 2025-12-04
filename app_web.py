@@ -164,7 +164,7 @@ with st.sidebar:
     )
     
     if mode == 1:
-        st.markdown("#### �� Configuration des besoins")
+        st.markdown("#### 📊 Configuration des besoins")
         
         # Vérifier si un fichier est chargé pour avoir les périodes
         if 'optimizer' in st.session_state:
