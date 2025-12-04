@@ -89,6 +89,22 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.markdown("## 📁 FICHIER D'ENTRÉE")
+    
+    # Bouton de téléchargement du template
+    try:
+        with open("template_greve.xlsx", "rb") as template_file:
+            st.download_button(
+                label="📥 Télécharger le fichier template",
+                data=template_file,
+                file_name="template_greve.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+    except FileNotFoundError:
+        st.info("💡 Créez un fichier Excel avec 2 onglets : TABLEAU 1 (disponibilités) et TABLEAU 2 (besoins)")
+    
+    st.markdown("###")
+    
     uploaded_file = st.file_uploader(
         "Sélectionnez votre fichier Excel",
         type=['xlsx'],
