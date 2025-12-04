@@ -212,7 +212,7 @@ if uploaded_file is not None:
                     else:
                         needed = "-"
                     
-                    teachers_list = [optimizer.teachers[i] for i in range(len(optimizer.teachers)) 
+                    teachers_list = [str(optimizer.teachers[i]) for i in range(len(optimizer.teachers)) 
                                     if solution[i, j] == 2]
                     
                     period_stats.append({
