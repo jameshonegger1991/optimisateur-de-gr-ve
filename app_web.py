@@ -52,7 +52,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     st.markdown("""
     ## 🎯 À quoi sert ce programme ?
     
-    Ce programme **répartit automatiquement les grèves** entre les enseignants disponibles, 
+    Ce programme **répartit automatiquement les périodes de grève** entre les enseignants disponibles, 
     en respectant vos besoins et en équilibrant la charge de travail.
     
     ### 📝 Comment préparer votre fichier Excel ?
