@@ -175,7 +175,7 @@ with st.sidebar:
     
     if mode == 2:
         periods_per_teacher = st.number_input(
-            "Nombre maximum de périodes par enseignant",
+            "Nombre maximum de périodes grévées par enseignant",
             min_value=1,
             max_value=10,
             value=2,

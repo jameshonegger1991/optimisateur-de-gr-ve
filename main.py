@@ -331,7 +331,7 @@ class GrevesOptimizer:
         """Mode 2 : Maximiser l'impact en respectant limite par enseignant
 
         Args:
-            periods_per_teacher: Nombre maximum de périodes par enseignant
+            periods_per_teacher: Nombre maximum de périodes grévées par enseignant
             closure_threshold: Seuil pour fermer une période (optionnel)
             excluded_periods: Liste des périodes à exclure
 
