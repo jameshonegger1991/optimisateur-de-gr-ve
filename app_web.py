@@ -221,7 +221,6 @@ with st.sidebar:
                     st.session_state['required_strikers_mode1'] = required_strikers
                     st.session_state['needs_validated'] = True
                     st.success(f"✓ Besoins validés pour {len(required_strikers)} périodes !")
-                    st.rerun()
             
             # Afficher l'état de validation
             if st.session_state.get('needs_validated', False) and 'required_strikers_mode1' in st.session_state:
@@ -371,8 +370,6 @@ if uploaded_file is not None:
             st.session_state['needs_validated'] = False  # Réinitialiser la validation
             st.session_state['required_strikers_mode1'] = None
             st.success(f"✓ Fichier chargé : {len(optimizer.teachers)} enseignants, {len(optimizer.periods)} périodes")
-            # Forcer le rafraîchissement pour que la sidebar se mette à jour
-            st.rerun()
         
         if optimize_button:
             with st.spinner("🔄 Optimisation en cours..."):
@@ -384,6 +381,11 @@ if uploaded_file is not None:
                     # Récupérer required_strikers depuis session_state
                     # (mis à jour par la sidebar)
                     required_strikers = st.session_state.get('required_strikers_mode1', None)
+                    
+                    # DEBUG
+                    st.write("DEBUG session_state keys:", list(st.session_state.keys()))
+                    st.write("DEBUG required_strikers:", required_strikers)
+                    st.write("DEBUG needs_validated:", st.session_state.get('needs_validated'))
                     
                     if required_strikers is None or not required_strikers:
                         st.error("⚠️ **Les besoins n'ont pas été validés !**")
