@@ -176,7 +176,8 @@ with st.sidebar:
             uniform_need = st.checkbox(
                 "Utiliser le même nombre pour toutes les périodes",
                 value=True,
-                help="Cochez pour définir un seul nombre appliqué à toutes les périodes"
+                help="Cochez pour définir un seul nombre appliqué à toutes les périodes",
+                key="uniform_need_mode1"
             )
             
             required_strikers = {}
@@ -188,7 +189,8 @@ with st.sidebar:
                     max_value=len(optimizer.teachers),
                     value=min(5, len(optimizer.teachers)),
                     step=1,
-                    help="Ce nombre sera appliqué à toutes les périodes"
+                    help="Ce nombre sera appliqué à toutes les périodes",
+                    key="default_need_all_periods"
                 )
                 for period in optimizer.periods:
                     required_strikers[period] = default_need
@@ -229,7 +231,8 @@ with st.sidebar:
             uniform_need = st.checkbox(
                 "Utiliser le même nombre pour toutes les périodes",
                 value=True,
-                help="Cochez pour définir un seul nombre appliqué à toutes les périodes"
+                help="Cochez pour définir un seul nombre appliqué à toutes les périodes",
+                key="uniform_need_mode1"
             )
             
             required_strikers = {}
@@ -241,7 +244,8 @@ with st.sidebar:
                     max_value=len(optimizer.teachers),
                     value=min(5, len(optimizer.teachers)),
                     step=1,
-                    help="Ce nombre sera appliqué à toutes les périodes"
+                    help="Ce nombre sera appliqué à toutes les périodes",
+                    key="default_need_all_periods"
                 )
                 for period in optimizer.periods:
                     required_strikers[period] = default_need
