@@ -169,6 +169,7 @@ with st.sidebar:
         # Vérifier si un fichier est chargé pour avoir les périodes
         if 'optimizer' in st.session_state:
             optimizer = st.session_state['optimizer']
+            file_key = st.session_state.get('last_file', 'default')
             
             st.info("Définissez le nombre de grévistes souhaité pour chaque période")
             
@@ -177,7 +178,7 @@ with st.sidebar:
                 "Utiliser le même nombre pour toutes les périodes",
                 value=True,
                 help="Cochez pour définir un seul nombre appliqué à toutes les périodes",
-                key="uniform_need_mode1"
+                key=f"uniform_need_{file_key}"
             )
             
             required_strikers = {}
@@ -190,7 +191,7 @@ with st.sidebar:
                     value=min(5, len(optimizer.teachers)),
                     step=1,
                     help="Ce nombre sera appliqué à toutes les périodes",
-                    key="default_need_all_periods"
+                    key=f"default_need_{file_key}"
                 )
                 for period in optimizer.periods:
                     required_strikers[period] = default_need
@@ -224,6 +225,7 @@ with st.sidebar:
         # Vérifier si un fichier est chargé pour avoir les périodes
         if 'optimizer' in st.session_state:
             optimizer = st.session_state['optimizer']
+            file_key = st.session_state.get('last_file', 'default')
             
             st.info("Définissez le nombre de grévistes souhaité pour chaque période")
             
@@ -232,7 +234,7 @@ with st.sidebar:
                 "Utiliser le même nombre pour toutes les périodes",
                 value=True,
                 help="Cochez pour définir un seul nombre appliqué à toutes les périodes",
-                key="uniform_need_mode1"
+                key=f"uniform_need_{file_key}"
             )
             
             required_strikers = {}
@@ -245,7 +247,7 @@ with st.sidebar:
                     value=min(5, len(optimizer.teachers)),
                     step=1,
                     help="Ce nombre sera appliqué à toutes les périodes",
-                    key="default_need_all_periods"
+                    key=f"default_need_{file_key}"
                 )
                 for period in optimizer.periods:
                     required_strikers[period] = default_need
