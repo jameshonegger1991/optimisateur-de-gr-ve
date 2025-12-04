@@ -599,6 +599,10 @@ if uploaded_file is not None:
 
 else:
     st.info("📁 Veuillez sélectionner un fichier Excel pour commencer")
+    
+    # Message spécifique pour Mode 1
+    if mode == 1:
+        st.warning("⚠️ **Mode 1 activé** : Après avoir chargé le fichier, configurez les besoins dans la **barre latérale à gauche** ⬅️")
 
 # Footer
 st.markdown("---")
