@@ -38,6 +38,20 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #00F0FF;
     }
+    /* Cacher le footer Streamlit "Deployed by..." */
+    footer {
+        visibility: hidden;
+    }
+    footer:after {
+        content:'Optimisateur de Grève • Version Web'; 
+        visibility: visible;
+        display: block;
+        position: relative;
+        padding: 5px;
+        top: 2px;
+        text-align: center;
+        color: #8B92B0;
+    }
     </style>
 """, unsafe_allow_html=True)
 
