@@ -116,7 +116,7 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     **Exemple avec seuil :** Si le seuil est de 10 grévistes pour fermer :
     - L'algorithme essaie d'atteindre 10 sur un maximum de périodes
     - Une fois 10 atteints sur une période, il priorise les autres périodes
-    - Résultat : plus de périodes fermées au lieu de concentrer sur quelques-unes
+    - Résultat : plus de périodes touchées de manière équitable au lieu de concentrer sur quelques-unes
     
     ---
     
