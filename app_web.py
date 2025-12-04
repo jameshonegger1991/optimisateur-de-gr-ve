@@ -219,62 +219,6 @@ with st.sidebar:
             st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
             st.session_state['required_strikers_mode1'] = None
     
-    if mode == 1:
-        st.markdown("#### �� Configuration des besoins")
-        
-        # Vérifier si un fichier est chargé pour avoir les périodes
-        if 'optimizer' in st.session_state:
-            optimizer = st.session_state['optimizer']
-            file_key = st.session_state.get('last_file', 'default')
-            
-            st.info("Définissez le nombre de grévistes souhaité pour chaque période")
-            
-            # Option : même nombre pour toutes les périodes ou personnalisé
-            uniform_need = st.checkbox(
-                "Utiliser le même nombre pour toutes les périodes",
-                value=True,
-                help="Cochez pour définir un seul nombre appliqué à toutes les périodes",
-                key=f"uniform_need_{file_key}"
-            )
-            
-            required_strikers = {}
-            
-            if uniform_need:
-                default_need = st.number_input(
-                    "Nombre de grévistes souhaité (toutes périodes)",
-                    min_value=1,
-                    max_value=len(optimizer.teachers),
-                    value=min(5, len(optimizer.teachers)),
-                    step=1,
-                    help="Ce nombre sera appliqué à toutes les périodes",
-                    key=f"default_need_{file_key}"
-                )
-                for period in optimizer.periods:
-                    required_strikers[period] = default_need
-            else:
-                st.markdown("Définissez les besoins par période :")
-                cols_per_row = 3
-                periods = optimizer.periods
-                
-                for idx in range(0, len(periods), cols_per_row):
-                    cols = st.columns(cols_per_row)
-                    for col_idx, period in enumerate(periods[idx:idx+cols_per_row]):
-                        with cols[col_idx]:
-                            need = st.number_input(
-                                f"{period}",
-                                min_value=0,
-                                max_value=len(optimizer.teachers),
-                                value=min(5, len(optimizer.teachers)),
-                                step=1,
-                                key=f"need_{period}"
-                            )
-                            required_strikers[period] = need
-            
-            st.session_state['required_strikers_mode1'] = required_strikers
-        else:
-            st.warning("⚠️ Chargez d'abord un fichier Excel pour configurer les besoins")
-            st.session_state['required_strikers_mode1'] = None
-    
     elif mode == 2:
         periods_per_teacher = st.number_input(
             "Nombre maximum de périodes grévées par enseignant",
