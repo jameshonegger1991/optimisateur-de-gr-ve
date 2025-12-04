@@ -89,6 +89,36 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.markdown("## 📁 FICHIER D'ENTRÉE")
+    
+    # Boutons de téléchargement
+    col_btn1, col_btn2 = st.columns(2)
+    
+    with col_btn1:
+        try:
+            with open("template_greve.xlsx", "rb") as template_file:
+                st.download_button(
+                    label="📄 Template vide",
+                    data=template_file,
+                    file_name="template_greve.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            pass
+    
+    with col_btn2:
+        try:
+            with open("template_greve_test_50.xlsx", "rb") as example_file:
+                st.download_button(
+                    label="📋 Exemple (50 enseignants)",
+                    data=example_file,
+                    file_name="exemple_50_enseignants.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            pass
+    
     uploaded_file = st.file_uploader(
         "Sélectionnez votre fichier Excel",
         type=['xlsx'],
@@ -121,89 +151,161 @@ if uploaded_file is not None:
                 else:
                     solution = optimizer.optimize_mode2(periods_per_teacher)
                 
-                # Sauvegarder le résultat
-                temp_output = "/tmp/resultat_optimise.xlsx"
-                optimizer.save_to_excel(temp_output)
+                # Sauvegarder dans session_state
+                st.session_state['optimizer'] = optimizer
+                st.session_state['solution'] = solution
+                st.session_state['mode'] = mode
                 
-                # Afficher le succès
                 st.success("✅ Optimisation terminée avec succès !")
-                
-                # Statistiques
-                st.markdown("### 📈 Statistiques")
-                
-                col_stat1, col_stat2, col_stat3 = st.columns(3)
-                
-                with col_stat1:
-                    total_strikers = (solution == 2).sum()
-                    st.metric("Total grévistes-périodes", total_strikers)
-                
-                with col_stat2:
-                    teachers_involved = len(set(i for i in range(len(optimizer.teachers)) 
-                                               if any(solution[i, :] == 2)))
-                    st.metric("Enseignants mobilisés", teachers_involved)
-                
-                with col_stat3:
-                    if teachers_involved > 0:
-                        periods_per_teacher_avg = total_strikers / teachers_involved
-                        st.metric("Moyenne périodes/enseignant", f"{periods_per_teacher_avg:.1f}")
-                    else:
-                        st.metric("Moyenne périodes/enseignant", "0")
-                
-                # Afficher la répartition par enseignant
-                st.markdown("### 👥 Répartition par enseignant")
-                
-                teacher_stats = []
-                for i, teacher in enumerate(optimizer.teachers):
-                    periods_count = (solution[i, :] == 2).sum()
-                    periods_list = [optimizer.periods[j] for j in range(len(optimizer.periods)) 
-                                   if solution[i, j] == 2]
-                    
-                    teacher_stats.append({
-                        "Enseignant": teacher,
-                        "Nombre de périodes": periods_count,
-                        "Périodes": ", ".join(periods_list) if periods_list else "-"
-                    })
-                
-                df_stats = pd.DataFrame(teacher_stats)
-                df_stats = df_stats.sort_values("Nombre de périodes", ascending=False)
-                st.dataframe(df_stats, use_container_width=True, hide_index=True)
-                
-                # Afficher la répartition par période
-                st.markdown("### 📅 Répartition par période")
-                
-                period_stats = []
-                for j, period in enumerate(optimizer.periods):
-                    strikers_count = (solution[:, j] == 2).sum()
-                    if period in optimizer.required_strikers:
-                        needed = optimizer.required_strikers[period]
-                    else:
-                        needed = "-"
-                    
-                    teachers_list = [optimizer.teachers[i] for i in range(len(optimizer.teachers)) 
-                                    if solution[i, j] == 2]
-                    
-                    period_stats.append({
-                        "Période": period,
-                        "Besoin": needed,
-                        "Grévistes": strikers_count,
-                        "Enseignants": ", ".join(teachers_list[:5]) + ("..." if len(teachers_list) > 5 else "")
-                    })
-                
-                df_periods = pd.DataFrame(period_stats)
-                st.dataframe(df_periods, use_container_width=True, hide_index=True)
-                
-                # Bouton de téléchargement
-                with open(temp_output, "rb") as f:
-                    st.download_button(
-                        label="📥 Télécharger le fichier résultat",
-                        data=f,
-                        file_name="resultat_optimise.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        type="primary",
-                        use_container_width=True
-                    )
         
-        else:
+        # Afficher les résultats si disponibles
+        if 'solution' in st.session_state and 'optimizer' in st.session_state:
+            solution = st.session_state['solution']
+            optimizer = st.session_state['optimizer']
+            
+            # Sauvegarder le fichier de résultat
+            temp_output = "/tmp/resultat_optimise.xlsx"
+            optimizer.save_to_excel(temp_output)
+            
+            # Statistiques
+            st.markdown("### 📈 Statistiques")
+            
+            col_stat1, col_stat2, col_stat3 = st.columns(3)
+            
+            with col_stat1:
+                total_strikers = (solution == 2).sum()
+                st.metric("Total grévistes-périodes", total_strikers)
+            
+            with col_stat2:
+                teachers_involved = len(set(i for i in range(len(optimizer.teachers)) 
+                                           if any(solution[i, :] == 2)))
+                st.metric("Enseignants mobilisés", teachers_involved)
+            
+            with col_stat3:
+                if teachers_involved > 0:
+                    periods_per_teacher_avg = total_strikers / teachers_involved
+                    st.metric("Moyenne périodes/enseignant", f"{periods_per_teacher_avg:.1f}")
+                else:
+                    st.metric("Moyenne périodes/enseignant", "0")
+            
+            # Afficher la répartition par enseignant
+            st.markdown("### 👥 Répartition par enseignant")
+            
+            teacher_stats = []
+            for i, teacher in enumerate(optimizer.teachers):
+                periods_count = (solution[i, :] == 2).sum()
+                periods_list = [optimizer.periods[j] for j in range(len(optimizer.periods)) 
+                               if solution[i, j] == 2]
+                
+                teacher_stats.append({
+                    "Enseignant": str(teacher),
+                    "Nombre de périodes": int(periods_count),
+                    "Périodes": ", ".join(periods_list) if periods_list else "-"
+                })
+            
+            df_stats = pd.DataFrame(teacher_stats)
+            df_stats = df_stats.sort_values("Nombre de périodes", ascending=False)
+            st.dataframe(df_stats, use_container_width=True, hide_index=True)
+            
+            # Afficher la répartition par période
+            st.markdown("### 📅 Répartition par période")
+            
+            period_stats = []
+            for j, period in enumerate(optimizer.periods):
+                strikers_count = (solution[:, j] == 2).sum()
+                if period in optimizer.required_strikers:
+                    needed = optimizer.required_strikers[period]
+                else:
+                    needed = "-"
+                
+                teachers_list = [str(optimizer.teachers[i]) for i in range(len(optimizer.teachers)) 
+                                if solution[i, j] == 2]
+                
+                period_stats.append({
+                    "Période": period,
+                    "Besoin": needed,
+                    "Grévistes": int(strikers_count),
+                    "Enseignants": ", ".join(teachers_list[:5]) + ("..." if len(teachers_list) > 5 else "")
+                })
+            
+            df_periods = pd.DataFrame(period_stats)
+            st.dataframe(df_periods, use_container_width=True, hide_index=True)
+            
+            # Section de modification manuelle
+            st.markdown("---")
+            st.markdown("### ✏️ Modifications manuelles")
+            st.markdown("Ajustez la solution en retirant ou ajoutant des grévistes")
+            
+            col_mod1, col_mod2 = st.columns(2)
+            
+            with col_mod1:
+                st.markdown("#### ❌ Retirer un gréviste")
+                period_to_remove = st.selectbox(
+                    "Sélectionner la période",
+                    options=optimizer.periods,
+                    key="remove_period"
+                )
+                
+                period_idx = optimizer.periods.index(period_to_remove)
+                current_strikers = [str(optimizer.teachers[i]) for i in range(len(optimizer.teachers))
+                                  if solution[i, period_idx] == 2]
+                
+                if current_strikers:
+                    person_to_remove = st.selectbox(
+                        "Enseignant à retirer",
+                        options=current_strikers,
+                        key="person_remove"
+                    )
+                    
+                    if st.button("🗑️ Retirer cette personne", key="btn_remove", use_container_width=True):
+                        # Trouver l'index de l'enseignant
+                        for i, teacher in enumerate(optimizer.teachers):
+                            if str(teacher) == person_to_remove:
+                                solution[i, period_idx] = optimizer.availability[i][period_idx]
+                                st.session_state['solution'] = solution
+                                st.rerun()
+                else:
+                    st.info("Aucun gréviste sur cette période")
+            
+            with col_mod2:
+                st.markdown("#### 🔍 Trouver un remplaçant")
+                period_to_replace = st.selectbox(
+                    "Sélectionner la période",
+                    options=optimizer.periods,
+                    key="replace_period"
+                )
+                
+                if st.button("➕ Chercher un remplaçant", key="btn_find", use_container_width=True):
+                    period_idx = optimizer.periods.index(period_to_replace)
+                    replacement = optimizer.find_replacement(period_idx, interactive=False)
+                    
+                    if replacement:
+                        teacher_idx, prenom, nom = replacement
+                        # Récupérer la solution modifiée
+                        solution = optimizer.solution
+                        st.session_state['solution'] = solution
+                        st.rerun()
+                    else:
+                        current = (solution[:, period_idx] == 2).sum()
+                        needed = optimizer.required_strikers.get(period_to_replace, 0)
+                        if current >= needed:
+                            st.info(f"✓ Aucun remplaçant nécessaire ({int(current)}/{int(needed)} grévistes)")
+                        else:
+                            st.warning("⚠ Aucun candidat disponible pour cette période")
+            
+            # Bouton de téléchargement
+            st.markdown("---")
+            with open(temp_output, "rb") as f:
+                st.download_button(
+                    label="📥 Télécharger le fichier résultat",
+                    data=f,
+                    file_name="resultat_optimise.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    use_container_width=True
+                )
+        
+        elif not optimize_button:
             st.info("👆 Cliquez sur 'LANCER L'OPTIMISATION' pour démarrer le calcul")
             
     except Exception as e:
@@ -212,32 +314,6 @@ if uploaded_file is not None:
 
 else:
     st.info("📁 Veuillez sélectionner un fichier Excel pour commencer")
-    
-    # Afficher un exemple de format
-    with st.expander("📋 Format du fichier Excel requis"):
-        st.markdown("""
-        ### TABLEAU 1 : Disponibilités des enseignants
-        
-        | Enseignant | P1 | P2 | P3 | P4 | ... |
-        |------------|----|----|----|----|-----|
-        | Dupont     | OK | OK |    | OK | ... |
-        | Martin     | OK |    | OK | OK | ... |
-        
-        - Mettez "OK" si l'enseignant peut faire grève
-        - Laissez vide sinon
-        
-        ---
-        
-        ### TABLEAU 2 : Besoins par période
-        
-        | Période | Grévistes nécessaires |
-        |---------|-----------------------|
-        | P1      | 5                     |
-        | P2      | 3                     |
-        | P3      | 7                     |
-        
-        **Note :** En Mode 2, ce tableau sert à prioriser les périodes (pas d'obligation stricte)
-        """)
 
 # Footer
 st.markdown("---")
