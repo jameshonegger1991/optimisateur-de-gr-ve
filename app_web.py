@@ -280,8 +280,6 @@ with st.sidebar:
             st.session_state['required_strikers_mode1'] = None
     
     elif mode == 2:
-    elif mode == 2:
-    if mode == 2:
         periods_per_teacher = st.number_input(
             "Nombre maximum de périodes grévées par enseignant",
             min_value=1,
