@@ -371,6 +371,8 @@ if uploaded_file is not None:
             st.session_state['needs_validated'] = False  # Réinitialiser la validation
             st.session_state['required_strikers_mode1'] = None
             st.success(f"✓ Fichier chargé : {len(optimizer.teachers)} enseignants, {len(optimizer.periods)} périodes")
+            # Forcer le rafraîchissement pour que la sidebar se mette à jour
+            st.rerun()
         
         if optimize_button:
             with st.spinner("🔄 Optimisation en cours..."):
