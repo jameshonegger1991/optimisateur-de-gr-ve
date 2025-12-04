@@ -363,14 +363,18 @@ if uploaded_file is not None:
                     # (mis à jour par la sidebar)
                     required_strikers = st.session_state.get('required_strikers_mode1', None)
                     
+                    # Debug
+                    st.write(f"DEBUG: required_strikers = {required_strikers}")
+                    st.write(f"DEBUG: type = {type(required_strikers)}")
+                    
                     if required_strikers is None or not required_strikers:
-                        st.error("⚠️ **Mode 1 nécessite la configuration des besoins**")
-                        st.info("""
-                        **Étapes :**
-                        1. Assurez-vous que votre fichier Excel est chargé
-                        2. Dans la barre latérale (←), configurez les besoins par période
-                        3. Les besoins apparaîtront automatiquement après le chargement du fichier
-                        4. Relancez l'optimisation
+                        st.error("⚠️ **Les besoins n'ont pas été validés !**")
+                        st.warning("""
+                        **Action requise :**
+                        1. ⬅️ Allez dans la barre latérale (PARAMÈTRES)
+                        2. 📊 Configurez les besoins par période
+                        3. ✅ **CLIQUEZ SUR LE BOUTON "VALIDER LES BESOINS"**
+                        4. 🔄 Relancez l'optimisation
                         """)
                         st.stop()
                     
