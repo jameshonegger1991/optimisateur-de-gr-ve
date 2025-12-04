@@ -63,13 +63,13 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     
     | Enseignant | P1 | P2 | P3 | P4 | P5 | ... |
     |------------|----|----|----|----|----|----|
-    | Dupont Marie | OK | OK |    | OK |    | ... |
-    | Martin Pierre | OK |    | OK | OK | OK | ... |
-    | Bernard Julie |    | OK | OK |    | OK | ... |
+    | Dupont Marie | 1 | 1 | 0 | 1 | 0 | ... |
+    | Martin Pierre | 1 | 0 | 1 | 1 | 1 | ... |
+    | Bernard Julie | 0 | 1 | 1 | 0 | 1 | ... |
     
     - **Colonnes** : les périodes de grève (P1, P2, P3... ou Lundi 8h, Mardi 10h, etc.)
     - **Lignes** : les noms des enseignants
-    - **Cellules** : écrivez **"OK"** si la personne peut faire grève sur cette période, **laissez vide** sinon
+    - **Cellules** : inscrivez **1** pour les périodes où l'enseignant travaille (peut faire grève), **0** sinon
     
     #### 📊 TABLEAU 2 : Les besoins
     
@@ -171,13 +171,13 @@ with st.expander("📖 COMMENT ÇA MARCHE ? (cliquez pour lire)", expanded=False
     
     | Enseignant | P1 | P2 | P3 | P4 | P5 | ... |
     |------------|----|----|----|----|----|----|
-    | Dupont Marie | OK | OK |    | OK |    | ... |
-    | Martin Pierre | OK |    | OK | OK | OK | ... |
-    | Bernard Julie |    | OK | OK |    | OK | ... |
+    | Dupont Marie | 1 | 1 | 0 | 1 | 0 | ... |
+    | Martin Pierre | 1 | 0 | 1 | 1 | 1 | ... |
+    | Bernard Julie | 0 | 1 | 1 | 0 | 1 | ... |
     
     - **Colonnes** : les périodes de grève (P1, P2, P3... ou Lundi 8h, Mardi 10h, etc.)
     - **Lignes** : les noms des enseignants
-    - **Cellules** : écrivez **"OK"** si la personne peut faire grève sur cette période, **laissez vide** sinon
+    - **Cellules** : inscrivez **1** pour les périodes où l'enseignant travaille (peut faire grève), **0** sinon
     
     #### 📊 TABLEAU 2 : Les besoins
     
@@ -288,7 +288,7 @@ with st.sidebar:
         **Mode 1** : Atteindre exactement les besoins en grévistes par période tout en minimisant et équilibrant la charge.
         
         Votre fichier Excel doit avoir :
-        - TABLEAU 1 : Disponibilités (OK/vide)
+        - TABLEAU 1 : Disponibilités (1 si l'enseignant travaille, 0 sinon)
         - TABLEAU 2 : Besoins par période
         """)
     else:
@@ -296,7 +296,7 @@ with st.sidebar:
         **Mode 2** : Chaque enseignant fait maximum N périodes de grève. L'algorithme priorise les périodes avec des besoins.
         
         Votre fichier Excel doit avoir :
-        - TABLEAU 1 : Disponibilités (OK/vide)
+        - TABLEAU 1 : Disponibilités (1 si l'enseignant travaille, 0 sinon)
         - TABLEAU 2 : Besoins par période (pour priorisation)
         """)
 
