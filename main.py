@@ -332,6 +332,9 @@ class GrevesOptimizer:
         
         # Marquer qu'on utilise le Mode 2
         self.optimization_mode = 2
+        
+        # Réinitialiser required_strikers pour Mode 2 (pas de besoins fixes)
+        self.required_strikers = {}
 
         Args:
             periods_per_teacher: Nombre maximum de périodes grévées par enseignant
