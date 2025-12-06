@@ -7,14 +7,16 @@ Script pour créer un template Excel protégé avec validation des données.
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side, Protection
 from openpyxl.worksheet.datavalidation import DataValidation
+import random
 
-def create_protected_template(filename="template_greve.xlsx", num_teachers=50):
+def create_protected_template(filename="template_greve.xlsx", num_teachers=50, with_random_data=False):
     """
     Créer un template Excel protégé avec validation des données
     
     Args:
         filename: Nom du fichier à créer
         num_teachers: Nombre d'enseignants dans le template
+        with_random_data: Si True, remplit avec des données aléatoires 0/1
     """
     wb = Workbook()
     ws = wb.active
@@ -54,15 +56,40 @@ def create_protected_template(filename="template_greve.xlsx", num_teachers=50):
         cell.border = border
     
     # Données exemples (lignes 4 à 4+num_teachers-1)
+    # Liste de prénoms et noms français aléatoires
+    prenoms = ["Marie", "Jean", "Sophie", "Pierre", "Julie", "Marc", "Laura", "Thomas", 
+               "Céline", "Nicolas", "Emma", "Lucas", "Camille", "Alexandre", "Léa", 
+               "Julien", "Sarah", "Mathieu", "Chloé", "David", "Manon", "Antoine",
+               "Charlotte", "Vincent", "Lisa", "Maxime", "Océane", "Romain", "Eva",
+               "Benjamin", "Alice", "François", "Clara", "Hugo", "Inès", "Arthur",
+               "Jade", "Louis", "Anaïs", "Paul", "Lucie", "Simon", "Margot", "Gabriel",
+               "Zoé", "Raphaël", "Louise", "Tom", "Lina", "Nathan"]
+    
+    noms = ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit",
+            "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel",
+            "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel",
+            "Girard", "André", "Lefevre", "Mercier", "Dupont", "Lambert", "Bonnet",
+            "François", "Martinez", "Legrand", "Garnier", "Faure", "Rousseau", "Blanc",
+            "Guerin", "Muller", "Henry", "Roussel", "Nicolas", "Perrin", "Morin",
+            "Mathieu", "Clement", "Gauthier", "Dumont", "Lopez", "Fontaine", "Chevalier", "Robin"]
+    
     for row_idx in range(4, 4 + num_teachers):
-        # Prénom et Nom
-        ws.cell(row=row_idx, column=1).value = f"Prénom{row_idx-3}"
-        ws.cell(row=row_idx, column=2).value = f"Nom{row_idx-3}"
+        # Prénom et Nom aléatoires
+        if with_random_data and row_idx - 4 < len(prenoms):
+            ws.cell(row=row_idx, column=1).value = prenoms[row_idx - 4]
+            ws.cell(row=row_idx, column=2).value = noms[row_idx - 4]
+        else:
+            ws.cell(row=row_idx, column=1).value = f"Prénom{row_idx-3}"
+            ws.cell(row=row_idx, column=2).value = f"Nom{row_idx-3}"
         
-        # P1 à P10 : valeurs par défaut 0
+        # P1 à P10 : valeurs aléatoires si demandé, sinon 0
         for col_idx in range(3, 13):
             cell = ws.cell(row=row_idx, column=col_idx)
-            cell.value = 0
+            if with_random_data:
+                # Générer 0 ou 1 aléatoirement (70% de chance d'avoir 1 pour plus de disponibilités)
+                cell.value = random.choices([0, 1], weights=[30, 70])[0]
+            else:
+                cell.value = 0
             cell.alignment = center_align
             cell.border = border
     
@@ -125,9 +152,9 @@ def create_protected_template(filename="template_greve.xlsx", num_teachers=50):
 
 if __name__ == "__main__":
     # Créer le template vide (50 enseignants)
-    create_protected_template("template_greve.xlsx", num_teachers=50)
+    create_protected_template("template_greve.xlsx", num_teachers=50, with_random_data=False)
     
-    # Créer le template de test (50 enseignants avec données variées)
-    create_protected_template("template_greve_test_50.xlsx", num_teachers=50)
+    # Créer le template de test (50 enseignants avec données aléatoires)
+    create_protected_template("template_greve_test_50.xlsx", num_teachers=50, with_random_data=True)
     
     print("\n🎯 Templates créés avec succès !")
