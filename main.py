@@ -10,6 +10,7 @@ class GrevesOptimizer:
     def __init__(self, excel_path):
         """Initialiser l'optimiseur à partir du fichier Excel"""
         self.excel_path = excel_path
+        self.optimization_mode = None  # Track si Mode 1 ou Mode 2
         self.load_data()
         
     def load_data(self):
@@ -131,6 +132,9 @@ class GrevesOptimizer:
         
     def optimize(self, required_strikers=None):
         """Optimiser la sélection des grévistes"""
+        # Marquer qu'on utilise le Mode 1
+        self.optimization_mode = 1
+        
         # Utiliser required_strikers passé en paramètre, sinon celui du fichier
         if required_strikers is not None:
             self.required_strikers = required_strikers
@@ -325,6 +329,9 @@ class GrevesOptimizer:
     
     def optimize_mode2(self, periods_per_teacher, closure_threshold=None, excluded_periods=None):
         """Mode 2 : Maximiser l'impact en respectant limite par enseignant
+        
+        # Marquer qu'on utilise le Mode 2
+        self.optimization_mode = 2
 
         Args:
             periods_per_teacher: Nombre maximum de périodes grévées par enseignant
@@ -597,8 +604,15 @@ class GrevesOptimizer:
         totals_row = {'Prénom': 'TOTAL', 'Nom': 'par période'}
         for j, period in enumerate(self.periods):
             total = sum(1 for i in range(len(self.teachers)) if self.solution[i][j] == 2)
-            needed = self.required_strikers.get(period, 0)
-            totals_row[period] = f"{total}/{int(needed)}" if needed > 0 else str(total)
+            
+            # Afficher différemment selon le mode
+            if self.optimization_mode == 1:
+                # Mode 1 : afficher total/besoin
+                needed = self.required_strikers.get(period, 0)
+                totals_row[period] = f"{total}/{int(needed)}" if needed > 0 else str(total)
+            else:
+                # Mode 2 : afficher seulement le total
+                totals_row[period] = str(total)
         result_df = pd.concat([result_df, pd.DataFrame([totals_row])], ignore_index=True)
         
         # Créer un workbook avec mise en forme
@@ -653,8 +667,16 @@ class GrevesOptimizer:
         
         for col_idx, period in enumerate(self.periods, 3):
             total = sum(1 for i in range(len(self.teachers)) if self.solution[i][col_idx-3] == 2)
-            needed = self.required_strikers.get(period, 0)
-            value = f"{total}/{int(needed)}" if needed > 0 else str(total)
+            
+            # Afficher différemment selon le mode
+            if self.optimization_mode == 1:
+                # Mode 1 : afficher total/besoin
+                needed = self.required_strikers.get(period, 0)
+                value = f"{total}/{int(needed)}" if needed > 0 else str(total)
+            else:
+                # Mode 2 : afficher seulement le total
+                value = str(total)
+            
             cell = ws.cell(row=last_row, column=col_idx, value=value)
             cell.font = Font(bold=True)
             cell.alignment = Alignment(horizontal="center")
