@@ -329,12 +329,6 @@ class GrevesOptimizer:
     
     def optimize_mode2(self, periods_per_teacher, closure_threshold=None, excluded_periods=None):
         """Mode 2 : Maximiser l'impact en respectant limite par enseignant
-        
-        # Marquer qu'on utilise le Mode 2
-        self.optimization_mode = 2
-        
-        # Réinitialiser required_strikers pour Mode 2 (pas de besoins fixes)
-        self.required_strikers = {}
 
         Args:
             periods_per_teacher: Nombre maximum de périodes grévées par enseignant
@@ -347,6 +341,12 @@ class GrevesOptimizer:
         - Équilibre la charge entre enseignants
         - IGNORE complètement TABLEAU 2 (required_strikers)
         """
+        # Marquer qu'on utilise le Mode 2
+        self.optimization_mode = 2
+        
+        # Réinitialiser required_strikers pour Mode 2 (pas de besoins fixes)
+        self.required_strikers = {}
+        
         num_teachers = len(self.teachers)
         num_periods = len(self.periods)
 
