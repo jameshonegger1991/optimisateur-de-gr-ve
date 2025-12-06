@@ -76,6 +76,23 @@ class GrevesOptimizer:
         for col in self.periods:
             availability_data[col] = pd.to_numeric(availability_data[col], errors='coerce').fillna(0).astype(int)
         
+        # VALIDATION : vérifier que les colonnes P1-P10 contiennent uniquement 0 ou 1
+        invalid_values = []
+        for i, row in enumerate(availability_data.values):
+            for j, period in enumerate(self.periods):
+                value = row[j]
+                if value not in [0, 1]:
+                    teacher_name = f"{self.teachers[i][0]} {self.teachers[i][1]}"
+                    invalid_values.append(f"Ligne {i+2} ({teacher_name}), colonne {period}: valeur {value}")
+        
+        if invalid_values:
+            error_msg = "❌ ERREUR DE VALIDATION : Les colonnes P1 à P10 doivent contenir uniquement 0 ou 1.\n\n"
+            error_msg += "Valeurs invalides trouvées :\n"
+            error_msg += "\n".join(invalid_values[:10])  # Limiter à 10 premières erreurs
+            if len(invalid_values) > 10:
+                error_msg += f"\n... et {len(invalid_values) - 10} autres erreurs"
+            raise ValueError(error_msg)
+        
         self.availability = availability_data.values
         
         # Extraire les besoins de grévistes par période
